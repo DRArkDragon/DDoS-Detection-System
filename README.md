@@ -1,54 +1,9 @@
-# GAR-Project 2019-2020
-
-   This workgroup is a project created by 4 students of the University of Alcalá for the subject of Network Management and Administration of the fourth year. 
+# DDoS-Detection-System
+This project represents my Major Project as part of the Master of Computer Applications (MCA) program at Jagan Institute of Management Studies, affiliated with Guru Gobind Singh Indraprastha University (GGSIPU). The project was collaboratively developed by a team of three students, including myself.
 
 ## Abstract 
+This project focuses on detecting Distributed Denial of Service (DDoS) attacks within Software Defined Network (SDN) environments. Using network emulation tools such as Mininet and monitoring solutions including Telegraf and InfluxDB, the project simulates network traffic to identify abnormal patterns indicative of DDoS attacks. The system aims to enhance network security by providing real-time detection and visualization capabilities, aiding in timely mitigation and network stability.
 
-The purpose of this project is to develop an artificial intelligence to classify possible DDoS attacks in an SDN network. This will be done by using data collectors such as Telegraf, Mininet to emulate the SDN network, and InfluxDB and Grafana as a means to store data and visualize it respectively. For non-English speakers we leave part of the content of this guide written in Spanish:
-
-*  Network Scenario - Mininet Guide: [Link](https://hackmd.io/@davidcawork/r1fZC-nRS) 
-*  DDoS using hping3 tool Guide: [Link](https://hackmd.io/@davidcawork/HJ_D7jA0r)
-*  Mininet Internals (II) Guide: [Link](https://hackmd.io/@davidcawork/SyrwHoNJL)
-
-
-**Keywords**: [`DDoS attacks`](https://www.digitalattackmap.com/); [`SDN network`](https://www.opennetworking.org/sdn-definition/); [`Artificial Intelligence classification`](https://www.sciencedirect.com/science/article/abs/pii/016974399500050X); [`Mininet`](http://mininet.org/)
-
-<br>
-
-## Index
-
-- [Installation methods :wrench:](#installation-methods-wrench)
-  * Vagrant
-  * Native
-- [Our scenario](#our-scenario)
-  * Running the scenario
-  * Is working properly?
-- [Attack time! :boom:](#attack-time-boom)
-    + Time to limit the links
-    + Getting used to hping3
-    + Installing things... again! :weary:
-    + Usage
-    + Demo time! :tada:
-- [Traffic classification with a SVM (**S**upport **V**ector **M**achine)](#traffic-classification-with-a-svm-support-vector-machine)
-  * First step: Getting the data collection to work :dizzy_face:
-  * Second step: Generating the training datasets
-  * Third step: Putting it all together: `src/traffic_classifier.py`
-- [Mininet CLI (**C**ommand **L**ine **I**nterface)](#mininet-cli-command-line-interface)
-- [Mininet Internals](#mininet-internals-)
-  * Network Namespaces
-- [Mininet Internals (II) <a name="mininet_internals_II"></a>](#mininet-internals-ii-)
-  * Is Mininet using Network Namespaces?
-  * The Big Picture
-      - How would our Kernel-level scenario look then?
-- [Troubleshooting](#troubleshooting)
-- [Appendix <a name="appendix"></a>](#appendix-)
-  * The Vagrantfile
-  * File descriptors: `stdout` and friends
-
----
-
-## Notes
-Throughout the document we will always be talking about 2 virtual machines (VMs) on which we implement the scenario we are discussing. In order to keep it simple we hace called one VM **controller** and the other one **test**. Even though the names may seem kind of random at the moment we promise they're not. Just keep this in mind as you continue reading.
 
 <br>
 
@@ -61,15 +16,15 @@ We have created a **Vagrantfile** through which we provide each machine with the
 ### Vagrant
 First of all, clone the repository from GitHub :octocat: and navigate into the new directory with:
 ```bash
-git clone https://github.com/GAR-Project/project
-cd project
+git clone https://github.com/DRArkDragon/DDoS-Detection-System
+cd DDoS-Detection-System
 ```
 We power up the virtual machine through **Vagrant**:
 ```bash
 vagrant up
 ```
 
-And we have to connect to both machines. **Vagrant** provides a wrapper for the *SSH* utility that makes it a breeze to get into each virtual machine. The syntax is just `vagrant ssh <machine_name>` where the `<machine_name>` is given in the **Vagrantfile** (see the [appendix](#appendix)):
+And we have to connect to both machines. **Vagrant** provides a wrapper for the *SSH* utility that makes it a breeze to get into each virtual machine. The syntax is just `vagrant ssh <machine_name>` where the `<machine_name>` is given in the **Vagrantfile** :
 ```bash
 vagrant ssh test
 vagrant ssh controller
@@ -93,15 +48,21 @@ Instead of using vagrant's manager to make the SSH connection, we can opt for ma
 ssh -i .vagrant/machines/test/virtualbox/private_key vagrant@10.0.123.2
 ```
 
+
+## OR we can use XTERM if you get any error using Vagrant.
+### System Installation and Usage Procedure Using Xterm Terminal
+The system runs on Ubuntu VMs created with VMware VirtualBox. Each VM requires manual access via terminal (Xterm) to start components, rather than automated tools like Vagrant. This ensures consistent configuration for easier debugging and control.
+
+
 ---
 
 ### Native
 This method assumes you already have any VMs up and running with the correct configuration and dependencies installed. Ideally you should have 2 VMs. We will be running **Ryu** (the *SDN* controller) in one of them and we will have **mininet**'s emulated network with running in the other one. Try to use Ubuntu 16.04 (a.k.a **Xenial**) as the VM's distribution to avoid any mistakes we may have not encountered.
 
-First of all clone the repository, just like how the Kaminoans :alien: do it and then navigate into it:
+First of all clone the repository, and then navigate into it:
 ```bash
-git clone https://github.com/GAR-Project/project
-cd project
+git clone https://github.com/DRArkDragon/DDoS-Detection-System
+cd DDoS-Detection-System
 ```
 
 Manually launch the provisioning scripts in each machine:
