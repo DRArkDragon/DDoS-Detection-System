@@ -126,10 +126,10 @@ Let's break this big boy down:
 If you want to move the controller app back into the foreground so that you can kill it with `CTRL + C` you can run `fg` which will bring the last process sent to the background back to the foreground.
 
 
-<!-- ![ryu_up](https://i.imgur.com/EGyKHLT.png) -->
+
 
 <p align="center">
-    <img src="img/Image 1.jpg">
+    <img src="img/Image 1.png">
 </p>
 
 Once the controller is up we are going to execute the network itself, to do so launch the aforementioned script from the `test` machine:
@@ -141,7 +141,7 @@ sudo python3 scenario_basic.py
 <!-- ![mininet_up](https://i.imgur.com/DSPsPDL.png) -->
 
 <p align="center">
-    <img src="https://i.imgur.com/DSPsPDL.png">
+    <img src="img/Image 2.png">
 </p>
 
 Notice how we have opened **Mininet CLI** from the `test` machine. We can perform many actions from this command line interface. The most useful ones are detailed below.
@@ -159,7 +159,7 @@ mininet> pingall
 <!-- ![ping_basic](https://i.imgur.com/NhglFK5.png) -->
 
 <p align="center">
-    <img src="https://i.imgur.com/NhglFK5.png">
+    <img src="img/Image 3.png">
 </p>
 
 As you can see in the image above, there is full connectivity in our scenario. You may have noticed how the first **ping** takes way longer than the other to get back to use. That is, its **RTT** (**R**ound **T**rip **T**ime) is abnormally high. This is due to the empty **ARP** tables we currently have *AND* to the fact that we don't yet have a flow defined to handle **ICMP** traffic:
@@ -171,7 +171,7 @@ As you can see in the image above, there is full connectivity in our scenario. Y
 <!-- ![ryu_packet_in](https://i.imgur.com/lSGDeTN.png) -->
 
 <p align="center">
-    <img src="https://i.imgur.com/lSGDeTN.png">
+    <img src="img/Image 4.png">
 </p>
 
 <br>
@@ -343,7 +343,7 @@ Note the above has been 'explained' at the beginning of the document.
 Time to launch `hping3` from **Host1** with the parameters we discussed:
 
 <p align="center">
-    <img src="https://i.imgur.com/Uei0gb5.png">
+    <img src="img/Image 5.png">
 </p>
 
 <br>
@@ -351,16 +351,13 @@ Time to launch `hping3` from **Host1** with the parameters we discussed:
 If we now try to ping **Host4** from **Host2** we'll fail horribly:
 
 <p align="center">
-    <img src="https://i.imgur.com/yjfSJoD.png">
+    <img src="img/Image 6.png">
 </p>
 
 <br>
 
-If we halt the **DoS** attack we will see the regular traffic resume its normal operation after a short period of time:
+If we halt the **DoS** attack we will see the regular traffic resume its normal operation after a short period of time.
 
-<p align="center">
-    <img src="https://i.imgur.com/5fkmrEu.png">
-</p>
 
 <br>
 
@@ -457,479 +454,7 @@ Additionally we used matplotlib to draw the classification we were carrying out.
 
 We've also written a signal handler to allow for a graceful exit when pressing `CTRL + C`.
 
-And with that we are finished! :tada: We hope to have been clear enough but if you still have any questions don't hesitate to contact us. You can find our GitHub :octocat: profiles over [here](#contact). 
+And with that we are finished! :tada: We hope to have been clear enough but if you still have any questions don't hesitate to contact. 
 
 ---
-
-## Mininet CLI (**C**ommand **L**ine **I**nterface)
-We've already set up our scenario and verified that it's working properly. We will now detail the most important commands we can issue from of **Mininet's CLI**.
-
-### Command: EOF + quit + exit
-These three commands are used for the same thing, to exit the **Mininet CLI** and finish the emulation. The source code of these three commands does not differ much, **EOF** and **quit** end up using the `do_exit` function at the end, so we could say that they are a bit repetitive. They offer several ways to kill the emulation so that people with different backgrounds feel "at `~`". The source code taking care of exiting is:
-
-```python
-def do_exit( self, _line ):
-    "Exit"
-    assert self # satisfy pylint and allow override
-    return 'exited by user command'
-
-def do_quit( self, line ):
-    "Exit"
-    return self.do_exit( line )
-
-def do_EOF( self, line ):
-    "Exit"
-    output( '\n' )
-    return self.do_exit( line )
-```
-
-### Command: dpctl
-The **dpctl** command is a management utility that allows some control over the OpenFlow switch (ovs-ofctl on the OpenvSwitch). This tool lets us add flows to the flow table, check the features and status of the switches or clean the table among many other things. For example, recall how we previously made a ping between **h1** and **h3**. If we consult the flow tables we will be able to check how the rules for handling **ICMP** flows have been instantiated:
-
-<!-- ![dpctl](https://i.imgur.com/1N3yQm8.png) -->
-
-<p align="center">
-    <img src="https://i.imgur.com/1N3yQm8.png">
-</p>
-
-Note how in the first and third switches we have 3 flow instead of the default one that let's us communicate with the controller. On top of that, take a closer look at the third switch and notice how the input and output ports for the first flow are 3 and 1 respectively. The second rule has the exact opposite distribution: the input port is 1 and the output is port 3. This setup let's us establish a communication link through this switch between any machines hooked to port's 1 and 3. These are the rules the controller has automagically set for us!
-
-This command is quite complex and powerful, and it may not be completely necessary for what we are going to do in this practice. It is nevertheless undoubtedly one of the most important commands to understand the internal workings of **SDN** switches. For more information, we encourage you to take a look at the documentation over at [OpenvSwitch](http://www.openvswitch.org/support/dist-docs/ovs-ofctl.8.txt).
-
-### Command: dump + net
-These commands will give us information about the emulated topology. The **net** command will indicate the names of the entities in the emulated topology as well as their interfaces. The **dump** command will also indicate the type of entity, its **IP** address, port when applicable, interface and the entitie's process identifier (**PID**).
-
-<!-- ![dump](https://i.imgur.com/ysCDTE5.png) -->
-
-<p align="center">
-    <img src="https://i.imgur.com/ysCDTE5.png">
-</p>
-
-### Command: xterm + gterm
-These two commands will allow us to open terminal emulators in the node identified by the accompanying argument. The command **xterm** will allow us to open a simple **XTERM** (the default terminal emulator for the **X** windows system) terminal emulator, and **gterm** launches a prettier but more resource hungry **Gnome terminal**. We can open several terminals at once by indicating all the nodes we want to open a terminal in. Later, when we discuss the inner workings of **Mininet**, we'll talk a bit more about where the **bash** process attached to the terminal emulator is running. You might think that this process is totally isolated from the machine on which you are running **Mininet**, but this is not entirely the case...
-
-```bash
-# xterm/gterm [node1] [node2]
-xterm h1 h6
-```
-
-<!-- ![xterm](https://i.imgur.com/YkSj6QB.png) -->
-
-<p align="center">
-    <img src="https://i.imgur.com/YkSj6QB.png">
-</p>
-
-
-### Command: nodes + ports + intfs
-These commands will list information related to the nodes in the topology. The **intfs** command will list all information related to the nodes' interfaces. The  **nodes** command will show every node in the topology. Finally, the **ports** command is used to list the ports and interfaces of the switches in the topology.
-
-<!-- ![intfs](https://i.imgur.com/9qNNYy1.png) -->
-
-<p align="center">
-    <img src="https://i.imgur.com/9qNNYy1.png">
-</p>
-
-### Command: The rest of the commands :smirk:
-Someone once told me **manpages** were my friends. This doesn't apply here directly but you get the idea. If you don't know what a command does try running it without arguments and you will be presented with a help section hopefully. If your machine blows up... It wasn't our fault! (It really should't though :ok_woman:). You can also issue `help <command_name>` from the **mininet CLI** to gather more intel. You can also contact us directly. We didn't want this section to grow too large and we believe the above commands are more than enough for our purposes.
-
-<br>
-
----
-
-<br>
-
-## Mininet Internals <a name="mininet_internals"></a>
-
-We have been covering **Mininet** fow a while now but... What is exactly **Mininet**? It is a tool used for emulating **SDN** (**S**oftware **D**efined **N**etworks). We can write software programs describing the network topology we want and then run them to create a virtual network just like the one we described. Cool right?
-
-Now, notice how we used the term **emulation** instead of **simulation**. Even though many people regard these terms as equivalent they are **NOT** the same. When we talk about **simulation** we are referring to software that computes the outcome of an event given an expected behaviour. On the other hand, **emulation** recreates the scenario under study in its entirety on specific hardware to then study its behaviour.
-
-An example to differentiate the two could be to think about a plane cockpit. If we were to play a videogame like **Flight Simulator** we would be simulating (no surprise) the flight but if we were to practice using a 1:1 scale with real controls we would then be talking about emulation.
-
-<!-- ![emulación](https://i.imgur.com/Pwr6MHb.jpg) -->
-
-<p align="center">
-    <img src="https://i.imgur.com/Pwr6MHb.jpg">
-</p>
-
-
-With this little detail out of the way we could ask ourselves. Does **mininet** emulate or simulate a network?. It is a network **emulator**, here's why. Mininet resrves system resources for each node in the **emulated** network. You might think these nodes are "just" VMs or virtualized containers but... they're not. That solution would have many advantages but it wouldn't scale to be able to **emulate** large networks or huge ammounts of traffic as it would exhaust the host system's resources... The Mininet developers then chose to **exclusively virtualize** what was necessary to carry out the desired **network emulation**.
-
-How did they do it? By using the **Network Namespaces**.
-
-<br>
-
-### Network Namespaces
-
-A **network namespace** consists of a logical network stack replica that by default is composed of the **Linux kernel**, paths, **ARP** tables, **Iptables** and network interfaces.
-
-Linux starts with a default **Network namespace** which is the one everyday users need for example. This namespace includes a routing table, an ARP table, the Iptables and any network interfaces it might need. The key here is that it is also possible to create more non-default network namespaces. We can then create new devices in those namespaces, or move an existing devices from one namespace to another. This is a rather complex virtualization concept provided by the Linux kernel and we will not delve any further. It is quite interesting if you ask us though... :fearful:
-
-In this way, each network element has its own network namespace, i.e. each element has its own network stack and interfaces. So at the networking level, one could say, they are independent elements. The key is that every node shares the same process namespace, IPCs namespace, filesystem... We are virtualizing up to the network layer only. This is the true power of the network stack approach to things. As Vegeta would put it: "Tha network namespace's power is over 9000!". **TODO**: Insert Meme here.
-
-<!-- ![example](https://i.imgur.com/4ihZdsP.png) -->
-
-<p align="center">
-    <img src="https://i.imgur.com/4ihZdsP.png">
-</p>
-
-In the above image we can see how we created a process in the host machine with the `sleep` command whose **PID** is `20483`. If the network elements were really isolated we wouldn't be able to see this process from other machines but the reality is different with mininet as we discussed.
-
-This is something to assume when working with Mininet's low-cost emulation :sweat_smile:. This approach would be lacking in other scenarios but it is more than enough to emulate a network. This fact casts some doubts on how to integrate our data collection system with **telegraf** in the different network elements without any incompatibilities...
-
-That's why we decided to take the controller "out of" the machine where Mininet was going to run so as to avoid problems with by-passes by IPCs from telegraf to the InfluxDB database. The only thing left for us to do is to figure out how to correctly install and configure telegraf so that everything works as intended.
-
-## Mininet Internals (II) <a name="mininet_internals_II"></a>
-
-<div style="text-align: justify">
-
-In this second part on the internal operation of Mininet, we will investigate the Kernel-level topology recreated by Mininet to set up our scenario. Finally, we will explain the different ways to raise services in the different Network namespaces, necessary to collect information with `telegraf`. 
-
-</div>
-
-### Is Mininet using Network Namespaces?
-
-<div style="text-align: justify">
-
-
-We have previously introduced that Mininet makes use of Network namespaces as a method to virtualize network stacks independent of each other, so that we can emulate networks at a minimum cost, but how can we be so sure that it really makes use of them? Here are the steps to verify whether or not Mininet is using Network namespaces.
-
-The first thing we have to do is run the scenario so that mininet can create the network namespaces that it needs to create. In addition, we can also run the controller in the controller machine to check at the last moment that none of the checks made have affected the operation of our scenario. 
-
-```bash
-# On the test machine, to set up the topology.
-sudo python3 scenario_basic.py
-
-# On the controller machine, to run the controller
-ryu-manager ryu.app.simple_switch_13
-```
-
-
-Now that we've set the scenario up we should be able to see if there are any Network namespaces on our machine, to do this we'll use the **iproute2** toolkit. Within this pack we will keep the most famous tool, `ip`. The `ip` tool is becoming established in the new linux distributions as the de facto tool to work on everything related to Networking in a Linux environment. In the latest versions of Ubuntu for example, the `ifconfig` command is starting to be replaced by the iproute2 toolkit (a.k.a `ip`). This tool has many modules, for more information see its manual:
-
-*    Tool manual [`ip`](https://linux.die.net/man/8/ip)
-
-The module that we will need to work with Network namespaces is **netns**, we can see all that it can offer us by doing `ip netns help`. The main command to list the Network namespaces using the netns module is the following:
-
-```bash
-sudo ip netns list
-```
-Knowing the command to list Network Namespaces, and having previously set up the scenario, let's check if there really are Network Namespaces created on our machine: 
-
-![netns_list](https://i.imgur.com/yFSdQ1H.png)
-
-<br>
-
-Oops :joy_cat:, it seems that there is no Network namespace created, maybe, **Mininet doesn't work as we said before?** First of all, let's calm down, we don't have to rewrite all the documentation.
-
-<p align="center">
-<img src="https://i.imgur.com/lBcFDBt.jpg" alt="calm" width="30%">
-</p>
-</div>
-
-<br>
-
-#### Not today :wink:
-
-<div style="text-align: justify">
-
-The problem that the command `ip netns list` **doesn't** give us information, is that mininet is not creating the required softlink for the tool to be able to list the network namespaces, if we read the [documentation](http://man7.org/linux/man-pages/man8/ip-netns.8.html) we can find out that `ip netns list` reads from the path `/var/run/netns/` where all the named network namespaces are placed. 
-
-If you've gotten to this point you probably want to check that iproute2 really does read from where it says it reads. We can get a trace of the system, i.e. collect all the syscalls made by a program and debug them ourselves. To do this we will use the `strace` command. For more information see their [manual](https://linux.die.net/man/1/strace). 
-
-
-The command we will use to get the syscalls trace is the following:
-
-```
-sudo starce ip netns list 
-```
-
-Then the output obtained (Try to zoom in on the image):
-
-![systemTrace](https://i.imgur.com/pwwmuID.jpg)
-
-<br>
-
-Let's take a good look at the last four lines. If it doesn't look right in the picture, it's these lines:
-
-```
-
-open("/var/run/netns", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-open("/var/run/netns", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
-exit_group(0)                           = ?
-+++ exited with 0 +++
-```
-
-The first part of the trace is going to be omitted since the only thing it does is, parse the parameters introduced, load very basic dynamic library functions in Linux ( `*.so` files, shared objects, for example, cache, libc among others). We will keep the last lines of the trace where you can see perfectly how it tries to make an `open`, in read mode of the directory, but this **does not exist**. 
-
-So we can say that the `ip netns list` command does work correctly. But then, where are the network namespaces used by Mininet?
-
-</div>
-
-#### Where are Mininet's Network Namespaces located? :kissing:
-
-<div style="text-align: justify">
-
-Well, to answer this question, we must first understand one thing. The `ip' tool with its **netns** module acts as a wrapper when we work with Network namespaces. Namespaces (there are several [types](http://man7.org/linux/man-pages/man7/network_namespaces.7.html)) have a finite life, that is, they live as long as they are **referenced**. A namespace can be referenced in **three** ways:
-
-* As long as there's **a process running** inside this namespace.
-* As long as you have opened a file descriptor to the namespace file. (`/proc/{pid}/ns/{type_namespace}`)
-
-* As long as there is a bind mount of the file (`/proc/{pid}/ns/{namespace type}`) of the namespace in question.
-
-If none of these conditions are met, the namespace in question is **deleted**. If it is a `net' type namespace (a.k.a Network Namespace) those interfaces that are in the disappearing namespace will return to the default namespace. Once we understand this concept, we must think about the nature of the Network namespaces that Mininet creates.
-
-
-Mininet, when is launched it creates an emulated network, when is closed it should disappear, this process should be as light and fast as possible to provide a better user experience. The nature of Mininet's needs leads us to believe that the creation and destruction of network namespaces is associated with the first condition of referencing a namespace. That is, there would be no point in making mounts or softlinks that will have to be removed later, as this would mean a significant workload for large network emulations and an increase in the time spent cleaning up the system once the emulation is complete. In addition, we must take into account that there is a third condition that is quite suitable with Mininet's needs, since only one process is needed running per Network namespace, and when cleaning we must only finish with the processes that *support* the Network namesaces.
-
-
-
-</div>
-
-
-##### Just a hypothesis?
-
-<div style="text-align: justify">
-
-
-Well, according to the above reasoning, we should see several processes that are created at the time of the build-up of our scenario in Mininet. These processes should each have a Network Namespace file, `/proc/{pid}/ns/net`, with a different **inode** for those processes running in different Network namespaces. Where do we start looking? 
-
-
-
-
-Let's set the scenario up if we haven't set it up before, list all processes, and filter by the name of *mininet*. Let's see what we find :grimacing:.
-
-
-```
-sudo ps aux | grep mininet
-```
-
-![procesos_netns](https://i.imgur.com/HSacu6V.png)
-
-Wow :hushed:! Without having created any process associated with each node in our scenario, there is already a process running a bash associated with each element in the scenario at the start of the emulation. That's funny... Isn't it? Let's dig a little deeper.
-
-
-If we inspect the `/proc/{pid}/ns/net` file for each process we can see which ones are in a different network namespace depending on the value of the inode. For example, let's check the processes associated with Host1 and Host2.
-
-
-
-
-![Host1](https://i.imgur.com/D5sM9kA.png)
-
-![Host2](https://i.imgur.com/huyuxUB.png)
-
-As you can see, different inodes, different files, **different network namespaces**. In order to make it more evident, we are going to execute a command to show which interfaces are associated to each Network namespace. In order to inject processes into a namespace we will use the `nsenter` tool. For more information about this tool, please refer to its [manual](http://man7.org/linux/man-pages/man1/nsenter.1.html).
-
-
-
-```
-nsenter --target <pid> --net {Command}
-```
-
-![Host1_intf](https://i.imgur.com/UwohklX.png)
-
-![Host2_intf](https://i.imgur.com/r6Z18ir.png)
-
-If we look at the command entered in each network namespace it is the same, `ip addr show` (a.k.a `ip a s`). With this command we can list all the addresses assigned to each interface of the Network namespace. The result obtained from the execution of each command is the expected one, in the Network namespace of the **Host1** we can see that the interface `h1-eth0` exists, and in the Network namespace of the **Host2** the interface `h2-eth0`. With this test we conclude with the existence of the Network namespace that Mininet uses.
-
-
-
-Additionally we can corroborate our hypothesis by changing the "*verbosity*" of our script, where we build the whole scenario topology, [`src/scenario_basic.py`](https://github.com/GAR-Project/project/blob/master/src/scenario_basic.py), we can change the level of `info` to `debug`, and launch the script again.
-
-
-```python
-if __name__ == '__main__':
-    #setLogLevel('info')
-    setLogLevel('debug')
-    scenario_basic()
-```
-
-![debug](https://i.imgur.com/ucOXTLm.png)
-
-As you can see in the execution, `veth` is created (**V**virtual **Eth**ernet devices), and the different processes that *will* support the different Network Namespaces. Furthermore, it has been possible to check how the `tc` (**T**raffic **C**controller) is used to establish the bandwidth and maximum queue limits to the links in the scenario.
-
-
-
-</div>
-
-#### So, It's possible to use iproute2 with Mininet? :relaxed:
-
-<div style="text-align: justify">
-
-The quick and easy answer in the current state would be that **no**. We can always make use of the Python API to run things inside a network element or if not, we can ultimately open the Mininet CLI, open an xterm and throw things by hand, or as we have done before make use of the `nsenter' tool. 
-
-So, there is no solution :unamused:? Well, almost everything has a solution, it depends on us to how far we want to go to fix things. Let's see how we can enable the Network namespace of **Host1** to be visible for `ip netns`.
-
-First we must locate the PID of the bash that holds the Host1 Network Namespace. In our case it is the following:
-
-```bash
-sudo ps aux | grep mininet | grep h1
-```
-<p align="center">
-   
-![pid_h1](https://i.imgur.com/o4U12CD.png)
-
-</p>
-
-Once we know the PID of the process that *holds* the Host1 Network Namespace, we will create the `/var/run/netns` directory in case it is not created:
-
-```bash
-# We use the -p parameter so that in case it exists it does not give us errors.
-mkdir -p /var/run/netns/
-```
-
-We must make a softlink from the original Network Namespace file in the created directory (Let's remember that this is the path where the `ip netns list` command reads from).
-
-```bash
-sudo ln -sfT /proc/<PID>/ns/net /var/run/netns/h1
-```
-<p align="center">
-   
-![ln](https://i.imgur.com/7n4eMLI.png)
-
-</p>
-
-Finally, we would only have to try again the command 'ip netns list' to see if it is able to list the Network namespace:
-
-<p align="center">
-<img src="https://i.imgur.com/9Sz3fjc.png" alt="funciona_n_n" style="display: block;margin-left: auto; margin-right: auto; width: 50%;">
-</p>
-
-<br>
-
-Some will say it's dark magic.. But, it's just that, creating a softlink and knowing how each element works :wink:.
-
-
-![iproute2_fixed](https://i.imgur.com/X3pfkdp.png)
-
-As you can see, the command is fully functional. You can see how we are able to list all the interfaces of Host1's Network namespace. But as everything, it always has pros and cons, when we make the arrangement of creating a softlink and turning off the emulation with its corresponding system cleaning (we are mainly concerned with the elimination of the processes that supported the Network namespace), we are left with a broken softlink pointing to a site that no longer exists, or is no longer useful.
-
-<p align="center">
-<img src="https://i.imgur.com/sQoxBQn.png" style="display: block;margin-left: auto; margin-right: auto; width: 50%;">
-</p>
-
-<br>
-
-![broken_softlink](https://i.imgur.com/v3zv7nW.png)
-
-With all of the above, it is left up to the user to decide whether or not to use the iproute2 tool. If this is the case, it is recommended that an auxiliary cleaning script be developed to clean up those softlinks that are broken in the `/var/run/netns` directory when the emulation is finished.
-
-</div>
-
-
-### The Big Picture
-
-
-<div style="text-align: justify">
-
-Once we have concluded that Mininet makes use of Network namespaces and we know how to demonstrate it, we will inspect each of the Network namespaces to draw a scheme of how our Kernel-level scenario is implemented. Let's remember how our scenario was:
-
-![Escenario](https://i.imgur.com/kH7kAqB.png)
-
-As you can see, the switches are network elements that are supposed to be isolated in a network namespace, but for our surprise they are not in the default network namespace. Why does it work then, because there is no by-pass to the default network stack? This is because of the nature of veth, which goes straight to the OVS process itself. (A future guide will attempt to address this issue more fully).
-
-<br>
-
-![switchs](https://i.imgur.com/kItm2gA.png)
-
-<br>
-
-##### How would our Kernel-level scenario look then?
-
-![fin](https://i.imgur.com/Ex8P7zl.png)
-
-
-So, to run 'telegraf' only on the switches we would just launch it on the default network namespace! This can be done with a single `telegraf` process since the useful interfaces are all in the same Network namespace :relaxed: .
-</div>
-
-
----
-
-## Troubleshooting
-
-<!-- * If we use a terminal, without **X server** for example, to reroute the graphical stdout of the virtual machine out, the Miniedit tool will not run. It uses tkinter, it needs the environment variable `$DISPLAY` properly configured. -->
-
-* If we are to use a terminal emulator without an **X server** installed or properly configured the **miniedit** tool will not run. This tool presents us with a GUI we can use to define our network and then it'll generate a script that brings it up for us. If we are to reroute the **stdout** of a VM we will need to set the `$DISPLAY` variable accordingly as **miniedit** used **tkinter** and it needs it to run correctly.
-
-
-* If there are problems when launching the scenario try to clean up the previous environment. If we exit the mininet CLI by issuing the `quit` everything should be deleted correctly, otherwise we can always clean it up ourselves by running:
-```bash
-sudo mn -c
-```
-<!-- ![clean](https://i.imgur.com/zRrxiP5.png) -->
-
-<p align="center">
-    <img src="https://i.imgur.com/zRrxiP5.png">
-</p>
-
----
-
-## Appendix <a name="appendix"></a>
-
-We have decided to prepare an appendix so that we can shed some light on obscure topics not directly related to the project itself. We'll talk about tangential componentes of the project so that we can have a clearer idea of what's going on in the background and you can get a better grasp of the tools we have employed. It's a win win!
-
-### The Vagrantfile
-
-I bet you have heard about `Virtualbox` this wonderful program lets us virtualize an entire computer inside our own so that we can try new linux-based distros, use a Windows OS from Linux or just "create" a server farm for our own personal needs amongst many other use cases. These "virtual computers" are called **Virtual Machines** or **VM**s in `Virtualbox` lingo. The "bad" thing is that `Virtualbox` only offers a **GUI** (**G**raphical **U**ser **I**nterface) to manage new and existing VMs which makes the process extremely slow and changes it with each new update (the window titles vary, the menus are in different places...). This poses no problem at all to the average user but it becomes a nuisance in scenarios like ours.
-
-Another point of concern is the VM's provisioning: How can we get files from the host machine into the VM? We commonly used shared folders between the host machine and the VM but the set-up process can be a real pain. Is there any hope left in the galaxy? Yes: Help me `Vagrant`, you are my only hope!
-
-We can think of `Vagrant` as a wrapper for `Virtualbox` that let's us describe the VM's we want in a file called the `Vagrantfile`. We then run `Vagrant` with this file as an input and everything will be set up for us! By changing the `Vagrantfile` we can modify every VM in our topology. This includes provisioning new files, changing their memory, hostname, OS... This allows for a much more reproducible environment and hence a great portability.
-
-The `Vagrantfile` itself is written in `ruby`. It's contents are mostly in plain English and we have included comments for the tricky parts so as to make everything as clear as possible. You can even use this `Vagrantfile` as a template for your own projects!
-
-### File descriptors: `stdout` and friends
-
-What's a file descriptor? We can think of it as an information bundle describing a place we can write data to and read data from. We can employ these file descriptors to communicate our programs with the exterior world by menas of a file. In `C` we can open files through their file descriptors which we create thanks to the `fopen()` function. If you take a closer look at the documentation you will see the type returned by `fopen()` is in fact a pointer to a `FILE struct` (i.e a `FILE*`). This `FILE struct` contains info about the file itself: Have we reached the `End Of File` mark?, where are we going to read/write with our next instruction?, has there been any error when reading/writing data? This will let us handle our file in any way we want!
-
-If you think about it we are constantly writing to the terminal from our programs using functions like `printf()` in `C` and `print()` in `python3`. Do you remember opening a file descriptor to be able to write to the terminal? I bet not! This is because our running programs are given 3 default file descriptors: `stdout`, `stdin` and `stderr`. These are connected to the terminal running the program (usually), the keyboard and the terminal as well (usually) respectively. If you have used `C` you may go ahed and try to call `fprintf()` and pass `stdout` as the file descriptor (the first argument). You'll see that you'll be writing to the screen! We can then see how both `stdout` and `stderr` are output file descriptors but `stdin` is used for reading keyboard input. As we are mainly concermed with `stdout` we won't go into much detail here.
-
-Why do we have two file descriptors "attached" to the terminal you ask? This let's us separate a programs terminal output into 2 classes: normal output and error/debugging output. Even though both would appear in the terminal if we didn't take any further action we can redirect `stderr` to a file for later inspection which is a common practice. This redicrection is carried out when incoking the program from a terminal. The following command would redirect `My_prog.ex`'s `stderr` output to a file called `I_mesed_up.txt`:
-
-```bash
-./My_prog.ex 2>I_messed_up.txt
-```
-
-Please note that each file descriptors are associated to a given number:
-
-* `stdin`: `0`
-* `stdout`: `1`
-* `stderr`: `2`
-
-You can even redirect a file descriptor to the place where another is pointing. Take care with the order used to carry out these redirections! The following would redirect `stdout` to where `stderr` is pointing:
-
-```bash
-./My_prog.ex 2>I_messed_up.txt 1>&2
-```
-
-We hope to have shed some light on how file descriptors work, what they are and how to use them!
-
-## Authors :black_nib: <a name="contact"></a>
-
-* **David Carrascal** -> [Link github](https://github.com/davidcawork)
-* **Adrián Guerrero** -> [Link github](https://github.com/adrihamel)
-* **Pablo Collado** -> [Link github](https://github.com/pcolladosoto)
-* **Artem Strilets** -> [Link github](https://github.com/ArtemSSOO)
-
-## Wiki :book:
-
-1. R. L. S. de Oliveira, C. M. Schweitzer, A. A. Shinoda and Ligia Rodrigues Prete, "Using Mininet for emulation and prototyping Software-Defined Networks," 2014 IEEE Colombian Conference on Communications and Computing (COLCOM), Bogota, 2014, pp. 1-6.
-doi: 10.1109/ColComCon.2014.6860404 [Paper](http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6860404&isnumber=6860394)
-
-2. Kokila RT, S. Thamarai Selvi and K. Govindarajan, "DDoS detection and analysis in SDN-based environment using support vector machine classifier," 2014 Sixth International Conference on Advanced Computing (ICoAC), Chennai, 2014, pp. 205-210. [Paper](http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=7229711&isnumber=7229701)
-
-3. Manual [Network namespaces](http://man7.org/linux/man-pages/man7/network_namespaces.7.html)
-
-4. Manual [Namespaces](http://man7.org/linux/man-pages/man7/namespaces.7.html)
-
-5. Manual [Telegraf](https://docs.influxdata.com/telegraf/v1.13/)
-
-6. Manual [InfluxDB](https://docs.influxdata.com/influxdb/v1.7/)
-
-7. Manual [InfluxDB Python API](https://influxdb-python.readthedocs.io/en/latest/api-documentation.html)
-
-8. Schematic diagrams made with [DrawIO](https://www.draw.io).
-
-
-
 
