@@ -49,11 +49,6 @@ ssh -i .vagrant/machines/test/virtualbox/private_key vagrant@10.0.123.2
 ```
 
 
-## OR we can use XTERM if you get any error using Vagrant.
-### System Installation and Usage Procedure Using Xterm Terminal
-The system runs on Ubuntu VMs created with VMware VirtualBox. Each VM requires manual access via terminal (Xterm) to start components, rather than automated tools like Vagrant. This ensures consistent configuration for easier debugging and control.
-
-
 ---
 
 ### Native
