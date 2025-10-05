@@ -129,7 +129,7 @@ If you want to move the controller app back into the foreground so that you can 
 <!-- ![ryu_up](https://i.imgur.com/EGyKHLT.png) -->
 
 <p align="center">
-    <img src="https://i.imgur.com/EGyKHLT.png">
+    <img src="img/Image 1.jpg">
 </p>
 
 Once the controller is up we are going to execute the network itself, to do so launch the aforementioned script from the `test` machine:
