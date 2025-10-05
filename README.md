@@ -176,7 +176,7 @@ As you can see in the image above, there is full connectivity in our scenario. Y
 
 <br>
 
-As you can see, the controller's **stdout** (please see the [appendix](#appendix) to learn more about file descriptors) indicates the commands it has been instantiating according to the packets it has processed. In the end, for the first packet we will have to tolerate a delay due to **ARP** resolution and **flow** lookup and instantiation within the controller. The good thing is the rest of the packets will already have the destination **MAC** and the rules will already instantiated in the intermediate switches, so the new delay will be minimal.
+As you can see, the controller's **stdout** indicates the commands it has been instantiating according to the packets it has processed. In the end, for the first packet we will have to tolerate a delay due to **ARP** resolution and **flow** lookup and instantiation within the controller. The good thing is the rest of the packets will already have the destination **MAC** and the rules will already instantiated in the intermediate switches, so the new delay will be minimal.
 
 ---
 
